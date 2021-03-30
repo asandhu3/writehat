@@ -13,7 +13,6 @@ from writehat.lib.findingCategory import *
 log = logging.getLogger(__name__)
 
 class BaseDatabaseFinding(WriteHatBaseModel):
-
     # Associated form, override as necessary
     formClass = FindingForm
 
@@ -36,7 +35,6 @@ class BaseDatabaseFinding(WriteHatBaseModel):
 
     @classmethod
     def new(cls, postData):
-
         finding = cls()
         finding.updateFromPostData(postData)
         finding.clean_fields()
@@ -44,7 +42,6 @@ class BaseDatabaseFinding(WriteHatBaseModel):
 
 
     def __init__(self, *args, **kwargs):
-
         # holds the category model once it's been instantiated
         self._category_object = None
 
@@ -61,18 +58,20 @@ class BaseDatabaseFinding(WriteHatBaseModel):
 
     @classmethod
     def get_child(cls, id):
-
         finding = None
         try:
-            finding = CVSSDatabaseFinding.objects.get(id=id) 
-        except CVSSDatabaseFinding.DoesNotExist:
+            finding = ASVSDatabaseFinding.objects.get(id=id)
+        except ASVSDatabaseFinding.DoesNotExist:
             try:
-                finding = DREADDatabaseFinding.objects.get(id=id)
-            except DREADDatabaseFinding.DoesNotExist:
+                finding = CVSSDatabaseFinding.objects.get(id=id) 
+            except CVSSDatabaseFinding.DoesNotExist:
                 try:
-                    finding = ProactiveDatabaseFinding.objects.get(id=id)
-                except ProactiveDatabaseFinding.DoesNotExist:
-                    pass
+                    finding = DREADDatabaseFinding.objects.get(id=id)
+                except DREADDatabaseFinding.DoesNotExist:
+                    try:
+                        finding = ProactiveDatabaseFinding.objects.get(id=id)
+                    except ProactiveDatabaseFinding.DoesNotExist:
+                        pass
 
         if finding is None:
             raise FindingError(f"DatabaseFinding UUID {str(id)} does not exist")
@@ -89,6 +88,7 @@ class BaseDatabaseFinding(WriteHatBaseModel):
         findings = []
 
         for findingClass in [
+            ASVSDatabaseFinding,
             CVSSDatabaseFinding,
             DREADDatabaseFinding,
             ProactiveDatabaseFinding
@@ -100,9 +100,10 @@ class BaseDatabaseFinding(WriteHatBaseModel):
 
     @classmethod
     def all_children(cls, scoringType=None):
-
         findings = []
 
+        if scoringType in [None, 'ASVS']:
+            findings += list(ASVSDatabaseFinding.objects.all())
         if scoringType in [None, 'CVSS']:
             findings += list(CVSSDatabaseFinding.objects.all())
         if scoringType in [None, 'DREAD']:
@@ -115,7 +116,6 @@ class BaseDatabaseFinding(WriteHatBaseModel):
 
     @property
     def category(self):
-
         if self._category_object is None:
             self._category_object = DatabaseFindingCategory.objects.get(id=self.categoryID)
 
@@ -181,6 +181,37 @@ class BaseDatabaseFinding(WriteHatBaseModel):
             'url': '/findings',
             'name': 'Findings Database'
         }
+
+
+class ASVSFinding(BaseDatabaseFinding):
+    formClass = ASVSEngagementFindingForm
+
+    scoringType = models.CharField(default='ASVS', editable=False, max_length=50)
+    asvsNumber = models.CharField(max_length=50, blank=True, null=True)
+    asvsDescription = MarkdownField(max_length=30000, blank=True, null=True)
+    asvsDocumentation = MarkdownField(max_length=30000, blank=True, null=True)
+    asvsEvidence = MarkdownField(max_length=30000, blank=True, null=True)
+    asvsTools = MarkdownField(max_length=30000, blank=True, null=True)
+    
+    htmlTemplate = 'componentTemplates/ASVSFinding.html'
+    abridgedTemplate = 'componentTemplates/ASVSFindingShort.html'
+    summaryTemplate = 'componentTemplates/FindingsSummary.html'
+
+    def _formToModel(self, form):
+        formData = super()._formToModel(form)
+        return formData
+
+    def _modelToForm(self):
+        formData = super()._modelToForm()
+        return formData
+
+    @property
+    def score(self):
+        return 0
+
+    @property
+    def severity(self):
+        return 'N/A'
 
 
 
@@ -286,7 +317,6 @@ class CVSSFinding(BaseDatabaseFinding):
 
 
 class ProactiveFinding(BaseDatabaseFinding):
-
     formClass = ProactiveEngagementFindingForm
     scoringType = models.CharField(default='PROACTIVE', editable=False, max_length=50)
     htmlTemplate = 'componentTemplates/ProactiveFinding.html'
@@ -323,26 +353,25 @@ class DatabaseOnlyFinding:
         return self._form_object
 
 
+class ASVSDatabaseFinding(DatabaseOnlyFinding,ASVSFinding):
+    formClass = ASVSForm
+
 
 class CVSSDatabaseFinding(DatabaseOnlyFinding,CVSSFinding):
-
     formClass = CVSSForm
 
 
 class DREADDatabaseFinding(DatabaseOnlyFinding,DREADFinding):
-
     formClass = DREADForm
 
 
 class ProactiveDatabaseFinding(DatabaseOnlyFinding,ProactiveFinding):
-
     formClass = ProactiveForm
 
 
 
 # Recursive function for building JSON object of category tree
 def growFindingsTree(categoryID, name="root", categoriesOnly=False):
-
     # The dictionary key is the category ID and the name
     findingsTree = {'findings': {}, 'name': name, 'categoryChildren': {}}
 
@@ -365,7 +394,6 @@ def growFindingsTree(categoryID, name="root", categoriesOnly=False):
 
 
 def getFindingsTree(categoriesOnly=False):
-
     log.debug('[!]Running getFindingsTree')
     rootNode = DatabaseFindingCategory.getRootNode()
     findingsTree = growFindingsTree(str(rootNode.id))
@@ -374,7 +402,6 @@ def getFindingsTree(categoriesOnly=False):
 
 
 def getFindingsFlat(scoringType):
-
     log.info(f'getFindingsFlat() called with scoringType: {scoringType}')
     flatFindingList = []
     findings = BaseDatabaseFinding.all_children(scoringType=scoringType)

@@ -7,14 +7,15 @@ from writehat.lib.pageTemplate import PageTemplate
 from writehat.lib.report import Report, SavedReport
 from writehat.lib.errors import ComponentError, DatabaseError
 from writehat.lib.findingCategory import DatabaseFindingCategory
-from writehat.lib.findingGroup import CVSSFindingGroup, DREADFindingGroup, BaseFindingGroup, ProactiveFindingGroup
-from writehat.lib.engagementFinding import CVSSEngagementFinding, DREADEngagementFinding, ProactiveEngagementFinding
-from writehat.lib.finding import CVSSDatabaseFinding, ProactiveFinding, ProactiveDatabaseFinding, DREADDatabaseFinding
+from writehat.lib.findingGroup import ASVSFindingGroup, CVSSFindingGroup, DREADFindingGroup, BaseFindingGroup, ProactiveFindingGroup
+from writehat.lib.engagementFinding import ASVSEngagementFinding, CVSSEngagementFinding, DREADEngagementFinding, ProactiveEngagementFinding
+from writehat.lib.finding import ASVSDatabaseFinding, CVSSDatabaseFinding, ProactiveFinding, ProactiveDatabaseFinding, DREADDatabaseFinding
 
 log = logging.getLogger(__name__)
 
 
 allModels = {
+    'asvsengagementfinding': ASVSEngagementFinding,
     'cvssengagementfinding': CVSSEngagementFinding,
     'dreadengagementfinding': DREADEngagementFinding,
     'proactivefinding': ProactiveFinding,
@@ -22,9 +23,11 @@ allModels = {
     'report': Report,
     'savedreport': SavedReport,
     'pagetemplate': PageTemplate,
+    'asvsdatabasefinding': ASVSDatabaseFinding,
     'cvssdatabasefinding': CVSSDatabaseFinding,
     'dreaddatabasefinding': DREADDatabaseFinding,
     'dreadfindinggroup': DREADFindingGroup,
+    'asvsfindinggroup': ASVSFindingGroup,
     'cvssfindinggroup': CVSSFindingGroup,
     'basefindinggroup': BaseFindingGroup,
     'databasefindingcategory': DatabaseFindingCategory,

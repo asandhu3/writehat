@@ -1,0 +1,73 @@
+{% load custom_tags %}
+<div id="finding-{{ finding.id }}" scoring-type="ASVS" class="finding container" finding-severity="{{ finding.severity }}">
+    <div class='finding-header'>
+        <div class='finding-severity background-color-severity'>
+            {{ finding.severity }}
+        </div>
+        <div class='finding-title'>
+            {{ finding.name }}
+        </div>
+    </div>
+    {% if finding.asvsDescription %}
+        <div class='finding-content'>
+            <div class='description'>
+                {% markdown finding.asvsDescription %}
+            </div>
+        </div>
+    {% endif %}
+    {% if finding.asvsStatus %}
+        <div class='finding-content'>
+            <div class='status'>
+                {{ finding.asvsStatus }}
+            </div>
+        </div>
+    {% endif %}
+    {% if finding.asvsDocumentation %}
+        <div class='finding-content'>
+            <div class='documentation'>
+                {% markdown finding.asvsDocumentation %}
+            </div>
+        </div>
+    {% endif %}
+    {% if finding.asvsEvidence %}
+        <div class='finding-content'>
+            <div class='evidence'>
+                {% markdown finding.asvsEvidence %}
+            </div>
+        </div>
+    {% endif %}
+    {% if finding.asvsTools %}
+        <div class='finding-content'>
+            <div class='tools-used'>
+                {% markdown finding.asvsTools %}
+            </div>
+        </div>
+    {% endif %}
+    {% if finding.asvsStatus == 'Not Verified' %}
+        {% if finding.asvsSeverity %}
+            <div class='finding-content'>
+                <div class='severity'>
+                    {% markdown finding.asvsSeverity %}
+                </div>
+            </div>
+        {% endif %}
+        {% if finding.asvsRecommendation %}
+            <div class='finding-content'>
+                <div class='recommendation'>
+                    {% markdown finding.asvsRecommendation %}
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+    {% if finding.asvsReferences %}
+        <div class='finding-content'>
+            <div class='references'>
+                {% markdown finding.asvsReferences %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% for figure in finding.figures_ending %}
+  {% include 'reportTemplates/figure.html' with figure=figure %}
+{% endfor %}
+

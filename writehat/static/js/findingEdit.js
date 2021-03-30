@@ -2,8 +2,8 @@ function postFigureMetadata(findingID) {
   if (inEngagements()) {
     let figureMetadata = [];
     let forceUpdate = false;
-    $('.figureItem').each(function() {
-      if ( $(this).attr('id') != 'dummyFigureItem' ) {
+    $('.figureItem').each(function () {
+      if ($(this).attr('id') != 'dummyFigureItem') {
         let figureID = $(this).attr('figure-id');
         let figureCaption = $(this).find('.figure-caption').text();
         let figureSize = $(this).attr('figure-size');
@@ -20,15 +20,15 @@ function postFigureMetadata(findingID) {
       }
     })
     if ((figureMetadata && figureMetadata.length) ||
-        (figureMetadata.length === 0 && forceUpdate)) {
+      (figureMetadata.length === 0 && forceUpdate)) {
       $.ajax({
         url: `/images/finding/${findingID}/edit`,
-        type:'post',
+        type: 'post',
         data: JSON.stringify(figureMetadata),
-        success: function(response) {
+        success: function (response) {
           success('Successfully saved figure metadata');
         },
-        error: function(response) {
+        error: function (response) {
           error('Failed to update figure metadata');
         }
       })
@@ -56,9 +56,9 @@ function findingSave() {
   // submit form
   $.ajax({
     url: post_url,
-    type:'post',
+    type: 'post',
     data: form.serialize(),
-    success: function(findingID) {
+    success: function (findingID) {
       postFigureMetadata(findingID);
       var successMsg = 'Successfully saved finding';
       if (window.location.pathname.includes('/edit/')) {
@@ -68,7 +68,7 @@ function findingSave() {
         successRedirect(redirectURL + findingID, successMsg);
       }
     },
-    error: function() {
+    error: function () {
       error('Failed to save finding');
     }
   })
@@ -83,7 +83,11 @@ function updateRiskBadge() {
   var badgeContent = $('.risk-badge').text().trim().toUpperCase();
 
   // determine scoring type based on form fields
-  if ($('#id_cvssAV').length) {
+  if ($('#id_asvsNumber').length) {
+    var scoringType = 'ASVS';
+    $('.risk-badge').attr('finding-severity', $('#id_asvsSeverity').val());
+    $('.risk-badge .textButton-text').text('ASVS');
+  } else if ($('#id_cvssAV').length) {
     var scoringType = 'CVSS';
   } else if ($('#id_dreadDamage').length) {
     var scoringType = 'DREAD';
@@ -93,12 +97,12 @@ function updateRiskBadge() {
     $('.risk-badge .textButton-text').text('Proactive');
   }
 
-  if (scoringType != 'PROACTIVE') {
+  if (scoringType != 'PROACTIVE' && scoringType != 'ASVS') {
     // submit form
     $.post({
       url: `/validation/${scoringType}`.toLowerCase(),
       data: form.serialize(),
-      success: function(response) {
+      success: function (response) {
         // update badge color
         $('.risk-badge').attr('finding-severity', response['severity']);
         // update badge text
@@ -109,7 +113,7 @@ function updateRiskBadge() {
           `<input value="${response['vector']}" style="min-width: 20rem"></input>`
         );
       },
-      error: function() {
+      error: function () {
         error(`Failed to generate ${scoringType} preview`);
       }
     })
@@ -119,7 +123,7 @@ function updateRiskBadge() {
 
 
 function loadFigureSortable() {
-  if($('#manageFiguresContent').length) {
+  if ($('#manageFiguresContent').length) {
     try {
       figureSortable.destroy();
     } catch {
@@ -131,7 +135,7 @@ function loadFigureSortable() {
   }
 
   // figure delete
-  $('.figureDelete').off().click(function(e) {
+  $('.figureDelete').off().click(function (e) {
     e.stopPropagation();
     $(this).closest('.figureItem').remove();
     if ($('.figureItem').length === 1) {
@@ -144,7 +148,7 @@ function loadFigureSortable() {
   })
 
   // figure edit
-  $('.figureEdit').off().click(function(e) {
+  $('.figureEdit').off().click(function (e) {
 
     e.stopPropagation();
     var figureItem = $(e.currentTarget).closest('.figureItem')
@@ -153,27 +157,27 @@ function loadFigureSortable() {
     var size = figureItem.attr('figure-size');
 
     var readyEvent = 'figureEditReadyEvent';
-    var imageEditor = new ImageUploader(inline=false, editing=true);
+    var imageEditor = new ImageUploader(inline = false, editing = true);
 
-    $( document ).off(ImageUploader.editSuccessEvent);
-    $( document ).on(ImageUploader.editSuccessEvent, function(e, figureID, caption, size) {
+    $(document).off(ImageUploader.editSuccessEvent);
+    $(document).on(ImageUploader.editSuccessEvent, function (e, figureID, caption, size) {
       console.log('editSuccessEvent');
       figureItem.find('.figure-caption').text(caption);
       figureItem.attr('figure-size', size);
       $('.modal').modal('hide');
     })
 
-    $( document ).off(ImageUploader.readyEvent);
-    $( document ).on(ImageUploader.editReadyEvent, function() {
+    $(document).off(ImageUploader.readyEvent);
+    $(document).on(ImageUploader.editReadyEvent, function () {
       imageEditor.edit(src, caption, size);
-      $( document ).off(ImageUploader.editReadyEvent);
+      $(document).off(ImageUploader.editReadyEvent);
     })
   })
 
   // figure upload
-  $('#figureNew').off().click(function(e) {
-    $( document ).off(ImageUploader.readyEvent);
-    var imageUploader = new ImageUploader(input=null, inline=false);
+  $('#figureNew').off().click(function (e) {
+    $(document).off(ImageUploader.readyEvent);
+    var imageUploader = new ImageUploader(input = null, inline = false);
     imageUploader.select();
   })
 }
@@ -181,9 +185,9 @@ function loadFigureSortable() {
 
 function refreshFigures() {
   if (inEngagements()) {
-    loadPane('findingsFiguresList', 'manageFiguresContent', success_callback=function() {
+    loadPane('findingsFiguresList', 'manageFiguresContent', success_callback = function () {
       loadFigureSortable()
-      $( document ).trigger( 'figuresRefresh' );
+      $(document).trigger('figuresRefresh');
     })
   }
 }
@@ -195,15 +199,15 @@ function showAdvancedCheckbox() {
       $('.writehat-form tr:nth-child(18)').after('<tr id="advanced-choices-row"><th class="text-warning">Show Advanced:</th><td></td></tr>');
       $('#show-advanced-choices').detach().appendTo(('#advanced-choices-row > td'));
     }
-    
+
     // show/hide when toggled
-    $('#finding-advanced-checkbox').off().change(function() {
+    $('#finding-advanced-checkbox').off().change(function () {
       if (this.checked) {
-        $('.finding-advanced-choice').each(function() {
+        $('.finding-advanced-choice').each(function () {
           $(this).closest('tr').show();
         })
       } else {
-        $('.finding-advanced-choice').each(function() {
+        $('.finding-advanced-choice').each(function () {
           $(this).closest('tr').hide();
         })
       }
@@ -211,22 +215,35 @@ function showAdvancedCheckbox() {
 
     // hide advanced options by default
     var advanced_choices = $('.finding-advanced-choice');
-    var advanced_choice_values = advanced_choices.map(function(x,y) {
+    var advanced_choice_values = advanced_choices.map(function (x, y) {
       return y.value;
     }).toArray();
 
     // unless one of them has been changed already
-    if (!(advanced_choice_values.some(function(v){return v !== 'X'}))) {
-      advanced_choices.each(function() {
+    if (!(advanced_choice_values.some(function (v) { return v !== 'X' }))) {
+      advanced_choices.each(function () {
         $(this).closest('tr').hide();
       })
     } else {
-       $('#finding-advanced-checkbox').click();
+      $('#finding-advanced-checkbox').click();
     }
   } else {
     // TODO: hide DREAD Descriptions and Affected Resources
 
     $('#show-advanced-choices').hide();
+  }
+}
+
+function asvsHooks() {
+  var sel = $('#id_asvsStatus')
+  if (sel.val() == 'Not Verified') {
+    $('.not-verified').each(function () {
+      $(this).closest('tr').show();
+    })
+  } else {
+    $('.not-verified').each(function () {
+      $(this).closest('tr').hide();
+    })
   }
 }
 
@@ -247,10 +264,10 @@ function refreshJS() {
   var groups = $("table.writehat-form .btn-group");
 
   groups.children("button").addClass("btn-secondary");
-  groups.each(function() { 
+  groups.each(function () {
     var buttons = $(this).children("button");
     var btnCount = buttons.length;
-    buttons.each( function() { 
+    buttons.each(function () {
       $(this).addClass("n" + btnCount);
     });
   });
@@ -258,12 +275,16 @@ function refreshJS() {
   showAdvancedCheckbox();
 
   // update the risk badge when selectors are changed
-  $("select[name^='cvss'], select[name^='dread']").change(updateRiskBadge);
+  $("select[name^='cvss'], select[name^='dread'], #id_asvsSeverity").change(updateRiskBadge);
 
   loadToolTips();
   loadMarkdown();
   $('.selectpicker').selectpicker();
-  refreshFigures();
+
+  if (self.scoringType == 'ASVS') {
+    asvsHooks();
+    $("#id_asvsStatus").change(asvsHooks);
+  }
 }
 
 
@@ -282,29 +303,27 @@ function loadImportedForm() {
   console.log('loadImportedForm');
   $.ajax(
     {
-      url : '/engagements/fgroup/' + $("#fgroup-info").attr('fgroup-id') + '/finding/import/' + $("#id_finding").val(),
+      url: '/engagements/fgroup/' + $("#fgroup-info").attr('fgroup-id') + '/finding/import/' + $("#id_finding").val(),
       type: 'GET',
       contentType: 'application/json; charset=utf-8',
       dataType: 'html',
-      success: function(data)
-      {
-        $('#leftHeader').html('New Engagement Finding (' + $("#id_finding option:selected" ).text() + ')');
+      success: function (data) {
+        $('#leftHeader').html('New Engagement Finding (' + $("#id_finding option:selected").text() + ')');
         $('#findingDatabaseSelect-modal').modal('hide');
         $('#formDiv').html(data);
         //$('#id_categoryID').selectpicker();
-        $('#findingForm').attr("action",formURL);
+        $('#findingForm').attr("action", formURL);
         $('#formDiv').show();
         refreshJS();
         setCategoryID();
         $('#id_findingGroup').val($("#fgroup-info").attr('fgroup-id'));
         $('#id_findingGroup').selectpicker('refresh');
-        
-        $('.categoryAddButton').off().click(function() {
+
+        $('.categoryAddButton').off().click(function () {
           $('#categoryAdd-modal').modal('show');
         })
       },
-      error: function()
-      {
+      error: function () {
         error('Failed to import finding')
       }
 
@@ -314,38 +333,42 @@ function loadImportedForm() {
 
 
 function loadToolTips() {
-  $('.tooltipSelect').click(function(e){
+  $('.tooltipSelect').click(function (e) {
     var buttonID = $(e.currentTarget).attr('id').split('-');
-    var fieldName = buttonID[buttonID.length-1];
+    var fieldName = buttonID[buttonID.length - 1];
 
-    loadModal('tooltipSelect', function(tooltipSelectModal) {
-      
-      if (scoringType == 'DREAD'){
+    loadModal('tooltipSelect', function (tooltipSelectModal) {
+
+      if (scoringType == 'DREAD') {
         $('#tooltipSelect-modalLabel').text('DREAD Info');
       }
-      
-      if (scoringType == 'CVSS'){
+
+      if (scoringType == 'CVSS') {
         $('#tooltipSelect-modalLabel').text('CVSS Info');
       }
-  
+
+      if (scoringType == 'ASVS') {
+        $('#tooltipSelect-modalLabel').text('ASVS Info');
+      }
+
       tooltipSelectModal.modal('show');
-      selectedTooltipText = $('#tooltipText-'+fieldName).html();
+      selectedTooltipText = $('#tooltipText-' + fieldName).html();
       tooltipSelectModal.find('.modal-body').html(selectedTooltipText);
     })
   })
 }
 
 
-$(document).ready( function() {
+$(document).ready(function () {
 
   setCategoryID();
 
   // prevent cvss badge dropdown from closing on click
-  $('.risk-badge-content .dropdown-content').click(function(e) {e.stopPropagation();})
-  $('.dread-badge-content .dropdown-content').click(function(e) {e.stopPropagation();})
+  $('.risk-badge-content .dropdown-content').click(function (e) { e.stopPropagation(); })
+  $('.dread-badge-content .dropdown-content').click(function (e) { e.stopPropagation(); })
 
   // back button
-  $('#backButton').click(function() {
+  $('#backButton').click(function () {
     if (inEngagements()) {
       var engagementID = $('#engagement-info').attr('engagement-id');
       redirect(`/engagements/edit/${engagementID}`);
@@ -360,32 +383,32 @@ $(document).ready( function() {
   formURL = `/engagements/fgroup/${fgroupID}/finding/create`;
 
   //set the finding group ID
- $('#id_findingGroup').val(fgroupID);
- $('#id_findingGroup').selectpicker('refresh');
+  $('#id_findingGroup').val(fgroupID);
+  $('#id_findingGroup').selectpicker('refresh');
 
   // submit button
-  $('#findingSave').click(function(e) {
+  $('#findingSave').click(function (e) {
     findingSave();
   });
 
   // saveToTemplate button
-  $('#findingExport').click(function(e) {
+  $('#findingExport').click(function (e) {
     var findingID = $('#finding-info').attr('finding-id');
     successRedirect(
       `/findings/import/${findingID}`,
       'Successfully retrieved finding data',
-      newTab=true
+      newTab = true
     )
   })
-  
+
 
   // finding delete
-  $('#findingDelete').click(function(e) {
+  $('#findingDelete').click(function (e) {
 
     var findingName = $('#finding-info').attr('finding-name');
 
     promptModal(
-      confirm_callback=function(e) {
+      confirm_callback = function (e) {
         var findingID = $('#finding-info').attr('finding-id');
         if (inEngagements()) {
           var fgroupId = $('#fgroup-info').attr('fgroup-id');
@@ -395,39 +418,40 @@ $(document).ready( function() {
           var deleteURL = `/findings/delete/${findingID}`;
           var redirectURL = `/findings`;
         }
-        $.ajax({url: deleteURL, 
+        $.ajax({
+          url: deleteURL,
           type: 'POST',
-          success: function(result) {
+          success: function (result) {
             successRedirect(redirectURL, `Successfully deleted finding "${findingName}"`);
           },
-          error: function(result) {
+          error: function (result) {
             error(`Failed to delete finding "${findingName}"`);
           }
         })
       },
-      title='Delete Finding?',
-      body=`Are you sure you want to delete **${findingName}**?`,
-      leftButtonName='Cancel',
-      rightButtonName='Delete Finding',
-      danger=true
+      title = 'Delete Finding?',
+      body = `Are you sure you want to delete **${findingName}**?`,
+      leftButtonName = 'Cancel',
+      rightButtonName = 'Delete Finding',
+      danger = true
     )
 
   });
 
 
 
-  if ( ! inEngagements() ) {
-    $(".finding-database-exclude").each(function(){
+  if (!inEngagements()) {
+    $(".finding-database-exclude").each(function () {
       $(this).closest('tr').hide();
     })
   }
 
-  if ( inEngagements() || window.location.pathname.includes('/findings/')) {
+  if (inEngagements() || window.location.pathname.includes('/findings/')) {
     refreshJS();
-  } 
+  }
 
   // figure upload
-  $( document ).on(ImageUploader.successEvent, function(e, figureID, caption, size) {
+  $(document).on(ImageUploader.successEvent, function (e, figureID, caption, size) {
     if (!(inline)) {
       $('.modal').modal('hide');
       let newFigure = $('#dummyFigureItem').clone();
@@ -436,7 +460,7 @@ $(document).ready( function() {
       newFigure.find('img').attr('src', '/images/' + figureID);
       newFigure.attr('figure-id', figureID);
       newFigure.attr('figure-size', size);
-      newFigure.find('[figure-id]').each(function() {
+      newFigure.find('[figure-id]').each(function () {
         $(this).attr('figure-id', figureID);
       })
       newFigure.show();
@@ -446,23 +470,22 @@ $(document).ready( function() {
   })
 
   // open the "import finding" modal if we're in engagements
-  if ( inEngagements() && window.location.pathname.includes('/finding/new') ) {
-    loadModal('findingDatabaseSelect', function(findingDatabaseSelectModal) {
+  if (inEngagements() && window.location.pathname.includes('/finding/new')) {
+    loadModal('findingDatabaseSelect', function (findingDatabaseSelectModal) {
       findingDatabaseSelectModal.modal('show');
       // load a blank form if the modal is closed
       findingDatabaseSelectModal.on('hide.bs.modal', loadBlankForm)
       $('#loadBlankForm').click(loadBlankForm);
-      $('#loadImportedForm').click(function() {
+      $('#loadImportedForm').click(function () {
         // cancel the loading of the blank form
         findingDatabaseSelectModal.unbind();
         loadImportedForm();
       })
       // simulate a click on the selectpicker
-      $('.selectpicker').on('loaded.bs.select', function() {
+      $('.selectpicker').on('loaded.bs.select', function () {
         $('button.btn.dropdown-toggle.btn-light').click();
       })
       $('#id_finding').selectpicker();
     })
   }
-
 })

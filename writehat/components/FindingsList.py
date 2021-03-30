@@ -98,7 +98,9 @@ class Component(BaseComponent):
     def iconColorDynamic(self):
     
         try:
-            if self.getFindingGroup.scoringType == 'DREAD':
+            if self.getFindingGroup.scoringType == 'ASVS':
+                return 'var(--asvs-color)'
+            elif self.getFindingGroup.scoringType == 'DREAD':
                 return 'var(--dread-color)'
             elif self.getFindingGroup.scoringType == 'PROACTIVE':
                 return 'var(--proactive-color)'

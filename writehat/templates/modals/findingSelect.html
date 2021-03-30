@@ -30,7 +30,7 @@
                 </div>
               </th>
               <th class="right-border-color-severity background-color-severity-faded">
-                {{ finding.score }} {{ finding.severity }}
+                {{ finding.score|default:'' }} {{ finding.severity }}
               </th>
               <th style="min-width: 15em" class="smaller-column">{{ finding.name }}</th>
               <td>{{ finding.createdDate }}</td>

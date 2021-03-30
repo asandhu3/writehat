@@ -158,6 +158,14 @@ div.finding div.finding-content > div.background::before         { content: "Bac
 div.finding div.finding-content > div.remediation::before        { content: "Remediation" !important; }
 div.finding div.finding-content > div.references::before         { content: "References" !important; }
 
+/* ASVS SPECIFIC */
+
+div.finding div.finding-content > div.status::before             { content: "Status" !important; }
+div.finding div.finding-content > div.documentation::before      { content: "Documentation Reviewed" !important; }
+div.finding div.finding-content > div.evidence::before           { content: "Evidence" !important; }
+div.finding div.finding-content > div.severity::before           { content: "Priority/Severity" !important; }
+div.finding div.finding-content > div.recommendation::before     { content: "Recommendation" !important; }
+
 /* CVSS SPECIFIC */
 
 div.finding div.finding-content > div.tools-used::before         { content: "Tools Used" !important; }

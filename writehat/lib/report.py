@@ -84,6 +84,8 @@ class BaseReport(WriteHatBaseModel):
             for component in self._component_objects:
                 component._report = self
 
+        log.debug(self._component_objects)
+
         self._ordered_fgroups_populated = True
 
         return self._component_objects

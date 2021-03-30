@@ -83,3 +83,7 @@ div.finding-short div.finding-content ul li {
   margin: 4px;
   min-width: 8rem;
 }
+
+/* ASVS SPECIFIC */
+
+div.finding-short div.finding-content > div.status::before             { content: "Status" !important; }

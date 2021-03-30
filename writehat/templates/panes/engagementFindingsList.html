@@ -28,7 +28,7 @@
     <tbody class="text-nowrap">
       {% for finding in group.findings %}
         <tr finding-id="{{ finding.id }}" finding-name="{{ finding.name }}">
-          <td class="background-color-severity-faded right-border-color-severity" finding-severity="{{ finding.severity }}"><a href="/engagements/fgroup/finding/edit/{{ finding.id}}">{{ finding.score }} {{ finding.severity }}</a></td>
+          <td class="background-color-severity-faded right-border-color-severity" finding-severity="{{ finding.severity }}"><a href="/engagements/fgroup/finding/edit/{{ finding.id }}">{{ finding.score|default:''  }} {{ finding.severity }}</a></td>
           <td><a href="/engagements/fgroup/finding/edit/{{ finding.id}}" style="font-weight: bold">{{ finding.name }}</a></td>
           <td><a href="/engagements/fgroup/finding/edit/{{ finding.id}}">{{ finding.createdDate }}</a></td>
           <td><a href="/engagements/fgroup/finding/edit/{{ finding.id}}">{{ finding.modifiedDate }}</a></td>

@@ -39,6 +39,7 @@ urlpatterns = [
 
     # findings urls
     path('findings', views.findingsList),
+    path('findings/asvs/new', views.findingAsvsNew),
     path('findings/cvss/new', views.findingCvssNew),
     path('findings/dread/new', views.findingDreadNew),
     path('findings/proactive/new', views.findingProactiveNew),

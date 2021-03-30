@@ -26,6 +26,8 @@
   --green-rgba: 54, 201, 94;
   --green: rgba(var(--green-rgba), 1);
 
+  /* asvs */
+  --asvs-color: rgba(var(--deep-blue-rgba), 1);
   /* dread */
   --dread-color: rgba(224, 0, 101, 1);
   /* cvss */
@@ -37,6 +39,9 @@
 
 
 /* backgrounds */
+.bg-asvs {
+  background-color: var(--asvs-color);
+}
 
 .bg-cvss {
   background-color: var(--cvss-color);
@@ -67,6 +72,10 @@
   border-color: var(--yellow) !important;
 }
 
+.fg-asvs {
+  color: var(--asvs-color);
+}
+
 .fg-cvss {
   color: var(--cvss-color);
 }
@@ -81,6 +90,11 @@
 
 /* borders */
 
+.border-asvs {
+  border: 1px solid var(--asvs-color);
+  border-radius: .25rem;
+}
+
 .border-cvss {
   border: 1px solid var(--cvss-color);
   border-radius: .25rem;
@@ -94,6 +108,10 @@
 .border-proactive {
   border: 1px solid var(--proactive-color);
   border-radius: .25rem;
+}
+
+.borderleft-asvs {
+  border-left: .5em solid var(--asvs-color);
 }
 
 .borderleft-cvss {

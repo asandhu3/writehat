@@ -39,6 +39,11 @@ class EngagementFinding():
 
         finding = None
         try: 
+            finding = ASVSEngagementFinding.objects.get(id=id) 
+        except ASVSEngagementFinding.DoesNotExist:
+            pass
+        
+        try: 
             finding = CVSSEngagementFinding.objects.get(id=id) 
         except CVSSEngagementFinding.DoesNotExist:
             pass
@@ -67,7 +72,12 @@ class EngagementFinding():
         '''
 
         databaseFinding = BaseDatabaseFinding.get_child(id=databaseFindingId)
-        if databaseFinding.scoringType == 'CVSS':
+        if databaseFinding.scoringType == 'ASVS':
+            engagementFinding = databaseFinding.clone(
+                destinationClass=ASVSEngagementFinding,
+                name=databaseFinding.name
+            )
+        elif databaseFinding.scoringType == 'CVSS':
             engagementFinding = databaseFinding.clone(
                 destinationClass=CVSSEngagementFinding,
                 name=databaseFinding.name
@@ -133,6 +143,30 @@ class EngagementFinding():
     def url(self):
         return f"/engagements/fgroup/finding/edit/{self.id}"
 
+
+class ASVSEngagementFinding(EngagementFinding, ASVSFinding):
+    findingGroup = models.UUIDField(editable=False, null=True)
+    asvsStatus = models.CharField(max_length=255, null=True, blank=True)
+    asvsSeverity = models.CharField(max_length=255, null=True, blank=True)
+    asvsRecommendation = MarkdownField(max_length=30000, null=True, blank=True)
+    asvsReferences = MarkdownField(max_length=30000, null=True, blank=True)
+
+    formClass = ASVSEngagementFindingForm
+
+    # I wish we didn't have to define this in both classes, so I am leaving the CVSS/DREAD
+    # branch in place in case we redesign the heirarchy later
+    @property
+    def fgroup(self):
+        if self._fgroup_object is None:
+            # Importing here to prevent circular import
+            from writehat.lib.findingGroup import ASVSFindingGroup
+            self._fgroup_object = ASVSFindingGroup.objects.get(id=self.findingGroup)
+
+        return self._fgroup_object
+
+    @property
+    def severity(self):
+        return self.asvsSeverity
 
 
 class DREADEngagementFinding(EngagementFinding, DREADFinding):

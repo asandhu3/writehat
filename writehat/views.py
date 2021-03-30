@@ -727,6 +727,12 @@ def reportGeneratePdf(request,uuid):
 
     return response
 
+# load the new database finding form with the asvs form
+def findingAsvsNew(request):
+    log.debug("Called findingAsvsNew")
+    form = ASVSDatabaseFindingForm
+    return render(request,"pages/findingNew.html",{"form":form,"scoringType":"ASVS"})
+
 # load the new database finding form with the cvss form
 def findingCvssNew(request):
     log.debug("Called findingCvssNew")
@@ -792,7 +798,9 @@ def findingCreate(request):
     else:
         raise FindingCreateError("Missing 'scoringType' parameter")
     # for security, check the value or form type. Anything other than CVSSForm or DREADForm creates and error        
-    if scoringType == 'CVSS':
+    if scoringType == 'ASVS':
+        finding = ASVSDatabaseFinding.new(request.POST)
+    elif scoringType == 'CVSS':
         finding = CVSSDatabaseFinding.new(request.POST)
     elif scoringType == 'DREAD':
         finding = DREADDatabaseFinding.new(request.POST)
@@ -1280,8 +1288,9 @@ def engagementsList(request):
 @csrf_protect
 @require_http_methods(['POST'])
 def engagementFgroupCreate(request,uuid,gtype):
-
-    if gtype == "dread":
+    if gtype == "asvs":
+        p = ASVSFindingGroup.new(uuid=uuid,postData=request.POST)
+    elif gtype == "dread":
         p = DREADFindingGroup.new(uuid=uuid,postData=request.POST)
     elif gtype == "cvss":
         p = CVSSFindingGroup.new(uuid=uuid,postData=request.POST)
@@ -1329,6 +1338,13 @@ def engagementFgroupList(request,uuid):
     fgroupsDict = {}
     log.debug(f"engagementFgroupList called for UUID {uuid}; request.method: {request.method}")
 
+    ASVSFGroupList = []
+    ASVSFgroups = ASVSFindingGroup.objects.filter(engagementParent=uuid)
+    log.debug(list(ASVSFgroups))
+    for i in ASVSFgroups:
+        ASVSFGroupList.append({'id':str(i.id),'name':str(i.name)})
+    fgroupsDict['ASVS'] = ASVSFGroupList
+    
     CVSSFGroupList = []
     CVSSFgroups = CVSSFindingGroup.objects.filter(engagementParent=uuid)
     log.debug(list(CVSSFgroups))
@@ -1382,19 +1398,26 @@ def engagementDelete(request,uuid):
 @csrf_protect
 @require_http_methods(['GET', 'POST'])
 def engagementFindingDelete(request,uuid):
-
     try:
-        cvssEngagementFinding = CVSSEngagementFinding.get(uuid)
-        name = cvssEngagementFinding.name
-        cvssEngagementFinding.delete()
-        response = HttpResponse(f'Successfully deleted cvssEngagementFinding "{escape(name)}"')
+        asvsEngagementFinding = ASVSEngagementFinding.get(uuid)
+        name = asvsEngagementFinding.name
+        asvsEngagementFinding.delete()
+        response = HttpResponse(f'Successfully deleted asvsEngagementFinding "{escape(name)}"')
         response.status_code = 200
-        return HttpResponseRedirect('/engagements/edit/%s' % str(cvssEngagementFinding.engagementParent))
+        return HttpResponseRedirect('/engagements/edit/%s' % str(asvsEngagementFinding.engagementParent))
+    except ASVSEngagementFinding.DoesNotExist:
+        try:
+            cvssEngagementFinding = CVSSEngagementFinding.get(uuid)
+            name = cvssEngagementFinding.name
+            cvssEngagementFinding.delete()
+            response = HttpResponse(f'Successfully deleted cvssEngagementFinding "{escape(name)}"')
+            response.status_code = 200
+            return HttpResponseRedirect('/engagements/edit/%s' % str(cvssEngagementFinding.engagementParent))
 
-    except CVSSEngagementFinding.DoesNotExist:
-        log.debug(f'No report found with ID {uuid}')
-        response.status_code = 400
-        return response
+        except CVSSEngagementFinding.DoesNotExist:
+            log.debug(f'No report found with ID {uuid}')
+            response.status_code = 400
+            return response
 
 
 
@@ -1426,7 +1449,9 @@ def engagementFindingExport(request, uuid):
     log.debug(f"engagementFindingExport called for finding uuid {uuid}")
     p = EngagementFinding.get_child(id=uuid)
 
-    if p.scoringType == 'CVSS':
+    if p.scoringType == 'ASVS':
+         formClass = ASVSDatabaseFinding.formClass
+    elif p.scoringType == 'CVSS':
          formClass = CVSSDatabaseFinding.formClass
     elif p.scoringType == 'DREAD':
         formClass = DREADDatabaseFinding.formClass
@@ -1455,8 +1480,9 @@ def engagementFindingExport(request, uuid):
 def engagementFindingList(request,uuid):
     log.debug(f"engagementFindingList called for findingGroup {uuid}; request.method: {request.method}")
 
-
-    engagementFindings = CVSSEngagementFinding.objects.filter(findingGroup=uuid)
+    engagementFindings = ASVSEngagementFinding.objects.filter(findingGroup=uuid)
+    if engagementFindings.count() == 0:
+        engagementFindings = CVSSEngagementFinding.objects.filter(findingGroup=uuid)
     log.debug(list(engagementFindings))
     if request.method == 'GET':
         return render(request,"panes/engagementFindingsListManual.html",{'engagementFindings':engagementFindings})
@@ -1477,11 +1503,14 @@ def engagementFindingExcel(request,uuid):
     fgroups = Engagement.get(id=uuid).fgroups
     log.debug(list(fgroups))
 
+    ASVSEngagementFindings = []
     CVSSEngagementFindings = []
     DREADEngagementFindings = []
     ProactiveEngagementFindings = []
     for fgroup in fgroups:
-        if fgroup.scoringType == "CVSS":
+        if fgroup.scoringType == "ASVS":
+            ASVSEngagementFindings += fgroup.findings
+        elif fgroup.scoringType == "CVSS":
             CVSSEngagementFindings += fgroup.findings
         elif fgroup.scoringType == 'DREAD':
             DREADEngagementFindings += fgroup.findings
@@ -1502,6 +1531,7 @@ def engagementFindingExcel(request,uuid):
     
     # get finished workbook from excel.py
     workbook = generateExcel(
+        ASVSEngagementFindings,
         CVSSEngagementFindings,
         DREADEngagementFindings,
         ProactiveEngagementFindings

@@ -1,5 +1,6 @@
 function updateFindingPrefix() {
   var prefixes = {
+    'ASVS': 'A',
     'CVSS': 'T',
     'DREAD': 'NT',
     'PROACTIVE': 'P'
@@ -9,35 +10,35 @@ function updateFindingPrefix() {
 }
 
 
-$(document).ready(function() {
+$(document).ready(function () {
 
   var engagementID = $('#engagement-info').attr('engagement-id');
   var engagementName = $('#engagement-info').attr('engagement-name');
 
-  $('#engagementDelete').click(function(e) {
+  $('#engagementDelete').click(function (e) {
 
     promptModal(
-      confirm_callback=function() {
+      confirm_callback = function () {
         $.post({
-          url: '/engagements/delete/' + engagementID, 
-          success: function(result) {
+          url: '/engagements/delete/' + engagementID,
+          success: function (result) {
             successRedirect('/engagements', `Successfully deleted engagement: "${engagementName}" and all child entities`);
           }
         })
       },
-      title='Delete Engagement?',
-      body=`Are you sure you want to delete **${engagementName}** and all of its reports and findings?`,
-      leftButtonName='Cancel',
-      rightButtonName='Delete Engagement, Reports, and Findings',
-      danger=true
+      title = 'Delete Engagement?',
+      body = `Are you sure you want to delete **${engagementName}** and all of its reports and findings?`,
+      leftButtonName = 'Cancel',
+      rightButtonName = 'Delete Engagement, Reports, and Findings',
+      danger = true
     )
 
   });
 
 
   // edit button
-  $('#engagementEdit').click(function(e) {
-    loadModal('engagementEdit', function(engagementEditModal) {
+  $('#engagementEdit').click(function (e) {
+    loadModal('engagementEdit', function (engagementEditModal) {
       engagementEditModal.modal('show');
       setCustomerID();
 
@@ -46,7 +47,7 @@ $(document).ready(function() {
       $('#id_pageTemplateID').val(pageID);
       $('.selectpicker').selectpicker('render');
 
-      $('#engagementEditSave').click(function() {
+      $('#engagementEditSave').click(function () {
 
         if (!($('#id_name').val())) {
           error('Please specify a name for the engagement');
@@ -58,10 +59,10 @@ $(document).ready(function() {
           url: form.attr('action'),
           method: 'POST',
           data: form.serialize(),
-          success: function() {
+          success: function () {
             successRedirect('/engagements/edit/' + engagementID, 'Successfully updated engagement');
           },
-          error: function() {
+          error: function () {
             error('Failed to update engagement');
           }
         })
@@ -71,49 +72,49 @@ $(document).ready(function() {
 
 
   // remove fgroup 
-  $( "button[id^='fgroupDelete']" ).click(function(e) {
+  $("button[id^='fgroupDelete']").click(function (e) {
 
     var groupId = $(e.currentTarget).attr('id').split('_')[1];
     var findingGroupName = $('#fgroupName_' + groupId).text();
 
     promptModal(
-      confirm_callback=function() {
+      confirm_callback = function () {
         $.post({
-          url: `/engagements/fgroup/delete/${groupId}`, 
-          success: function(reportID) {
-           successRedirect('/engagements/edit/' + engagementID,'Successfully removed findingGroup and child findings')
-           //TO DO: get load pane to work instead of a redirect
-           //loadPane('findingGroupList','groupListPane');
+          url: `/engagements/fgroup/delete/${groupId}`,
+          success: function (reportID) {
+            successRedirect('/engagements/edit/' + engagementID, 'Successfully removed findingGroup and child findings')
+            //TO DO: get load pane to work instead of a redirect
+            //loadPane('findingGroupList','groupListPane');
           },
-          error: function(result) {
+          error: function (result) {
             error('Failed to delete finding group');
           }
         })
       },
-      title='Delete Finding Group?',
-      body=`Are you sure you want to delete **${findingGroupName}** and all of its findings?`,
-      leftButtonName='Cancel',
-      rightButtonName='Delete Finding Group and Associated Findings',
-      danger=true
+      title = 'Delete Finding Group?',
+      body = `Are you sure you want to delete **${findingGroupName}** and all of its findings?`,
+      leftButtonName = 'Cancel',
+      rightButtonName = 'Delete Finding Group and Associated Findings',
+      danger = true
     )
 
   })
 
 
   // finding group (name) edit
-  $('.fgroupedit').click(function(e) {
+  $('.fgroupedit').click(function (e) {
 
     var fgroupID = $(this).attr('fgroupID');
 
-    loadModal('editFindingGroup', function(editFindingGroupModal) {
+    loadModal('editFindingGroup', function (editFindingGroupModal) {
       editFindingGroupModal.modal('show');
 
-      $('#cancelEditFgroup').off().click(function() {
+      $('#cancelEditFgroup').off().click(function () {
         editFindingGroupModal.modal('hide');
-           
+
       });
 
-      $('#saveEditFgroup').click(function(e) {
+      $('#saveEditFgroup').click(function (e) {
 
         if (!($(this).closest('.modal').find('[name="name"]').val())) {
           error('Please specify a name for the finding group');
@@ -123,35 +124,35 @@ $(document).ready(function() {
         $.post({
           url: `/engagements/fgroup/edit/${fgroupID}`,
           data: $(e.currentTarget).closest('.modal').find('form').serialize(),
-          success: function(reportID) {
-           editFindingGroupModal.modal('hide');
-           successRedirect(`/engagements/edit/${engagementID}`, 'Successfully updated finding group')
+          success: function (reportID) {
+            editFindingGroupModal.modal('hide');
+            successRedirect(`/engagements/edit/${engagementID}`, 'Successfully updated finding group')
           },
-          error: function(result) {
+          error: function (result) {
             error('Failed to update finding group');
           }
         })
       });
 
-    }, {'fgroupID': fgroupID}, );
+    }, { 'fgroupID': fgroupID });
 
 
   });
 
   // new fgroup button
-  $('#fgroupAdd').click(function() {
-     loadModal('newFindingGroup', function(newFindingGroupModal) {
-     
+  $('#fgroupAdd').click(function () {
+    loadModal('newFindingGroup', function (newFindingGroupModal) {
+
       newFindingGroupModal.modal('show');
 
       // update the finding prefix when scoring method is changed
       $('#id_scoringType').off().change(updateFindingPrefix);
       updateFindingPrefix();
 
-      $('#cancelNewFgroup').off().click(function() {
-        newFindingGroupModal.modal('hide');   
+      $('#cancelNewFgroup').off().click(function () {
+        newFindingGroupModal.modal('hide');
       });
-      $('#saveNewFgroup').click(function() {
+      $('#saveNewFgroup').click(function () {
 
         if (!($(this).closest('.modal').find('[name="name"]').val())) {
           error('Please specify a name for the finding group');
@@ -159,11 +160,13 @@ $(document).ready(function() {
         }
 
         var scoringType;
-        if ($('#id_scoringType').val() == 'CVSS') {
+        if ($('#id_scoringType').val() == 'ASVS') {
+          scoringType = 'asvs';
+        } else if ($('#id_scoringType').val() == 'CVSS') {
           scoringType = 'cvss';
-        } else if ($('#id_scoringType').val() == "DREAD")  {
+        } else if ($('#id_scoringType').val() == "DREAD") {
           scoringType = 'dread';
-        } else if ($('#id_scoringType').val() == "PROACTIVE")  {
+        } else if ($('#id_scoringType').val() == "PROACTIVE") {
           scoringType = 'proactive';
         } else {
           error('Invalid group type submitted');
@@ -174,31 +177,31 @@ $(document).ready(function() {
           url: `/engagements/${engagementID}/fgroup/${scoringType}/create`,
           type: 'POST',
           data: {
-              'name': $('#id_name').val(),
-              'prefix': $('#id_prefix').val()
+            'name': $('#id_name').val(),
+            'prefix': $('#id_prefix').val()
           },
-          success: function(reportID) {
-           newFindingGroupModal.modal('hide');
+          success: function (reportID) {
+            newFindingGroupModal.modal('hide');
 
-           successRedirect('/engagements/edit/' + engagementID, 'Successfully added findingGroup')
-           //TO DO: get load pane to work instead of a redirect
-           //loadPane('findingGroupList','groupListPane');
+            successRedirect('/engagements/edit/' + engagementID, 'Successfully added findingGroup')
+            //TO DO: get load pane to work instead of a redirect
+            //loadPane('findingGroupList','groupListPane');
 
           },
-          error: function(result) {
+          error: function (result) {
             error('Failed to create findingGroup');
           }
-          })
+        })
       });
 
-     });
-   });
+    });
+  });
 
 
   // new report button
-  $('#reportCreate').click(function() {
+  $('#reportCreate').click(function () {
 
-    loadModal('reportTemplateSelect', function(reportTemplateSelectModal) {
+    loadModal('reportTemplateSelect', function (reportTemplateSelectModal) {
 
       reportTemplateSelectModal.modal('show');
 
@@ -206,17 +209,17 @@ $(document).ready(function() {
       //reportTemplateSelectModal.on('hide.bs.modal', function() {
       //  redirect(`/engagements/${engagementID}/report/new`);
       //})
-      $('#cloneReportTemplate').off().click(function() {
+      $('#cloneReportTemplate').off().click(function () {
         // cancel the loading of the new report page
         reportTemplateSelectModal.unbind();
         var reportTemplateID = $('#id_reportTemplate').val();
         loadReportTemplate(reportTemplateID);
       })
-      $('#createFromScratch').off().click(function() {
+      $('#createFromScratch').off().click(function () {
         redirect(`/engagements/${engagementID}/report/new`);
       })
       // simulate a click on the selectpicker
-      $('.selectpicker').on('loaded.bs.select', function() {
+      $('.selectpicker').on('loaded.bs.select', function () {
         $('button.btn.dropdown-toggle.btn-light').click();
       })
       $('#id_reportTemplate').selectpicker();
@@ -227,22 +230,22 @@ $(document).ready(function() {
   // loadFromTemplate button
   function loadReportTemplate(reportTemplateID) {
     $.post({
-      url: `/engagements/report/${reportTemplateID}/createFromTemplate`, 
+      url: `/engagements/report/${reportTemplateID}/createFromTemplate`,
       data: {
         'engagementID': $('#engagement-info').attr('engagement-id'),
       },
-      success: function(reportID) {
+      success: function (reportID) {
         var url = `/engagements/report/${reportID}/edit`;
         successRedirect(url, 'Successfully created report from template');
       },
-      error: function(result) {
+      error: function (result) {
         error('Failed to create report');
       }
     })
   }
 
   // report generate button (HTML)
-  $('.reportGenerateHTML').click(function(e) {
+  $('.reportGenerateHTML').click(function (e) {
     var reportID = $(e.currentTarget).closest('tr').attr('report-id');
     var win = window.open(`/engagements/report/${reportID}/generate`, '_blank');
     if (win) {
@@ -255,7 +258,7 @@ $(document).ready(function() {
   })
 
   // report generate button (PDF)
-  $('.reportGeneratePDF').click(function(e) {
+  $('.reportGeneratePDF').click(function (e) {
     var reportID = $(e.currentTarget).closest('tr').attr('report-id');
     var win = window.open(`/engagements/report/${reportID}/generatePdf`, '_blank');
     if (win) {
@@ -268,7 +271,7 @@ $(document).ready(function() {
   })
 
   // report generate button (PDF)
-  $('.reportEdit').click(function(e) {
+  $('.reportEdit').click(function (e) {
     var reportID = $(e.currentTarget).closest('tr').attr('report-id');
     window.location.href = `/engagements/report/${reportID}/edit`;
   })

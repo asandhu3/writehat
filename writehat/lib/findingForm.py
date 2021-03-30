@@ -41,6 +41,44 @@ class FindingForm(forms.Form):
 
         return type(self).__name__
 
+class ASVSForm(FindingForm):
+    scoringType = 'ASVS'
+
+    # make sure category goes first (after name)
+    field_order = ['name', 'categoryID']
+
+    asvsNumber = forms.CharField(
+        label='Requirement Number', 
+        widget=forms.TextInput(),
+        max_length=100
+    )
+    asvsDescription = forms.CharField(
+        label='Requirement Description',
+        widget=forms.Textarea(),
+        max_length=30000
+    )
+    asvsDocumentation = forms.CharField(
+        label='Documentation Reviewed',
+        widget=forms.Textarea(),
+        max_length=30000
+    )
+    asvsEvidence = forms.CharField(
+        label='Evidence',
+        widget=forms.Textarea(),
+        max_length=30000
+    )
+    asvsTools = forms.CharField(
+        label='Tools Used',
+        widget=forms.Textarea(),
+        max_length=30000
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        del self.fields['background']
+        del self.fields['references']
+        del self.fields['remediation']
+
 
 class DREADForm(FindingForm):
 
@@ -343,6 +381,7 @@ class FindingImportForm(forms.Form):
 
 # Finding Group Types
 choicesFgroup = (
+    ('ASVS', ('ASVS')),
     ('CVSS', ('CVSS 3.1')),
     ('DREAD', ('DREAD Framework')),
     ('PROACTIVE', ('Proactive / Positive')),
@@ -414,7 +453,68 @@ class EngagementFindingForm(forms.Form):
             )
 
 
+class ASVSEngagementFindingForm(EngagementFindingForm,ASVSForm):
+    findingGroup = forms.UUIDField(label='Finding Group',required=True)
 
+    status_choices = (
+        ('Verified', ('Verified')),
+        ('Not Verified', ('Not Verified')),
+        ('Insufficient Information', ('Insufficient Information')),
+        ('Not Applicable', ('Not Applicable')),
+    )
+    asvsStatus = forms.ChoiceField(
+        choices=status_choices,
+        label='Status',
+        widget=TooltipBase(fieldName='status', tooltipText='', attrs={'class': 'custom-select'}),
+        required=True
+    )
+
+    severity_choices = (
+        ('Informational', ('Informational')),
+        ('Low', ('Low')),
+        ('Medium', ('Medium')),
+        ('High', ('High')),
+        ('Critical', ('Critical')),
+    )
+    asvsSeverity = forms.ChoiceField(
+        choices=severity_choices,
+        label='Severity',
+        widget=TooltipBase(fieldName='severity', tooltipText='', attrs={'class': 'custom-select not-verified'}),
+        required=False
+    )
+
+    asvsRecommendation = forms.CharField(
+        label='Recommendation',
+        widget=forms.Textarea(attrs={'class': 'not-verified'}),
+        max_length=30000,
+        required=False
+    )
+    asvsReferences = forms.CharField(
+        label='References',
+        widget=forms.Textarea(),
+        max_length=30000,
+        required=False
+    )
+
+    field_order = [
+        'name',
+        'findingGroup',
+        'categoryID',
+        'asvsNumber',
+        'asvsDescription',
+        'asvsStatus',
+        'asvsDocumentation',
+        'asvsEvidence',
+        'asvsTools',
+        'asvsSeverity',
+        'asvsRecommendation',
+        'asvsReferences',
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        del self.fields['description']
+        del self.fields['affectedResources']
 
 
 class CVSSEngagementFindingForm(EngagementFindingForm,CVSSForm):
@@ -478,6 +578,8 @@ class ProactiveEngagementFindingForm(EngagementFindingForm,ProactiveForm):
     findingGroup = forms.UUIDField(label='Finding Group',required=True)
     field_order = ['name','findingGroup','categoryID','description','affectedResources','background','references']
 
+class ASVSDatabaseFindingForm(ASVSForm):
+    findingGroup = None
 
 class CVSSDatabaseFindingForm(CVSSForm):
     findingGroup = None
