@@ -29,7 +29,7 @@ services:
       - .:/opt/writehat
     expose:
       - 8000
-    restart: unless-stopped
+    restart: always
     depends_on:
       - mongo
       - mysql
@@ -41,7 +41,7 @@ services:
       - ./mongo/db:/data/db
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=FORTHELOVEOFGEEBUSPLEASECHANGETHIS
+      - MONGO_INITDB_ROOT_PASSWORD=bxWd39FJ23A4rMnKDXjm
     expose:
       - 27017
 
@@ -50,13 +50,13 @@ services:
     volumes:
       - ./mysql:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: CHANGETHISIFYOUAREANINTELLIGENTHUMANBEING
+      MYSQL_ROOT_PASSWORD: Wrxct6tf9JHgjmpL2aUK
       MYSQL_DATABASE: writehat
       MYSQL_USER: writehat
-      MYSQL_PASSWORD: CHANGETHISIFYOUAREANINTELLIGENTHUMANBEING
+      MYSQL_PASSWORD: Wrxct6tf9JHgjmpL2aUK
     expose:
       - 3306
-    restart: unless-stopped
+    restart: always
 
   chrome:
     image: selenium/standalone-chrome:latest

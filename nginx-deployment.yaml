@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath
+    kompose.version: 1.22.0 (955b78124)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: nginx
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nginx
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert --volumes hostPath
+        kompose.version: 1.22.0 (955b78124)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: nginx
+    spec:
+      containers:
+        - image: nginx
+          name: nginx
+          ports:
+            - containerPort: 80
+            - containerPort: 443
+          resources: {}
+          volumeMounts:
+            - mountPath: /opt/writehat/nginx
+              name: nginx-hostpath0
+            - mountPath: /etc/nginx/conf.d/writehat.conf
+              name: nginx-hostpath1
+            - mountPath: /opt/writehat/static
+              name: nginx-hostpath2
+      restartPolicy: Always
+      volumes:
+        - hostPath:
+            path: /home/amar/Projects/writehat/nginx
+          name: nginx-hostpath0
+        - hostPath:
+            path: /home/amar/Projects/writehat/writehat/config/nginx.conf
+          name: nginx-hostpath1
+        - hostPath:
+            path: /home/amar/Projects/writehat/writehat/static
+          name: nginx-hostpath2
+status: {}
