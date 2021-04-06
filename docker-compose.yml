@@ -9,8 +9,8 @@ services:
       - ./writehat/config/nginx.conf:/etc/nginx/conf.d/writehat.conf
       - ./writehat/static:/opt/writehat/static
     ports:
-      - 80
-      - 443
+      - 80:80
+      - 443:443
     depends_on:
       - writehat
 
